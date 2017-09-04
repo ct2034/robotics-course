@@ -1,26 +1,26 @@
-#include <Kin/kin.h>
+#include <Kin/roboticsCourse.h>
+
 
 void simpleArrayOperations(){
-
-  /********* SEE PAGE 2 OF THE /doc/doc.pdf  ***********/
-  
-  arr x = {.1, .2, .3};         //directly setting the array
+  arr x;
+  x = ARR(.1, .2, .3);         //directly setting the array
   cout <<"x = " <<x <<endl;
 
-  x += arr({2., 2., 2.});        //adding to an array
+  x += ARR(2., 2., 2.);        //adding to an array
   cout <<"x = " <<x <<endl;
 
   x *= 1.;
   cout <<"x = " <<x <<endl;
 
-  arr y = {-.3,-.2,-.1};
+  arr y = ARR(-.3,-.2,-.1);
   y.append(x);                 //appending a vector to a vector
   cout <<"y = " <<y <<endl;
 
-  arr M(4, 3, { 1, 0, 0,                //some 4x3 matrix
-                0, 1, 0,
-                0, 0, 1,
-                1, 0, 0 });
+  arr M(4,3);                  //some 3 x 4 matrix
+  M[0] = ARR(1, 0, 0);         //setting the first row
+  M[1] = ARR(0, 1, 0);
+  M[2] = ARR(0, 0, 1);
+  M[3] = ARR(1, 0, 0);
 
   cout <<"M =\n" <<M <<endl;
 
@@ -36,52 +36,52 @@ void simpleArrayOperations(){
 
 
 void openingSimulator(){
-  mlr::KinematicWorld K("man.ors");
-  cout <<"joint dimensions = " <<K.getJointStateDimension() <<endl;
+  Simulator S("man.ors");
+  cout <<"joint dimensions = " <<S.getJointDimension() <<endl;
 
   cout <<"initial posture (hit ENTER in the OpenGL window to continue!!)" <<endl;
-  K.watch(true);        //pause and watch initial posture
+  S.watch();        //pause and watch initial posture
 
   arr q;
-  K.getJointState(q);
+  S.getJointAngles(q);
 
   q(0) += 0.1;                 //change the first entry of q-vector
-  K.getJointState(q);
-  K.watch(true);
+  S.setJointAngles(q);
+  S.watch();
   
   q = 0.;                      //set q-vector equal zero
-  K.getJointState(q);
-  K.watch(true);
+  S.setJointAngles(q);
+  S.watch();
 }
 
 
 void reach(){
-  mlr::KinematicWorld K("man.ors");
+  Simulator S("man.ors");
   arr q,W;
-  uint n = K.getJointStateDimension();
-  K.getJointState(q);
+  uint n = S.getJointDimension();
+  S.getJointAngles(q);
   double w = mlr::getParameter("w",1e-4);
   W.setDiag(w,n);  //W is equal the Id_n matrix times scalar w
 
   cout <<"initial posture (hit ENTER in the OpenGL window to continue!!)" <<endl;
-  K.watch(true);        //pause and watch initial posture
+  S.watch();        //pause and watch initial posture
 
   arr y_target,y,J;
-  for(uint i=0;i<10;i++){
+  double d = .05;
+  for(uint i=0;i<200;i++){
     //1st task:
     y_target = {-0.2, -0.4, 1.1}; 
-    K.kinematicsPos(y, J, K.getBodyByName("handR"));  //"handR" is the name of the right hand ("handL" for the left hand)
+    S.kinematicsPos(y,"handL");  //"handR" is the name of the right hand ("handL" for the left hand)
+    S.jacobianPos  (J,"handL");
 
     //compute joint updates
-    q += inverse(~J*J + W)*~J*(y_target - y); 
+    q += d*inverse(~J*J + W)*~J*(y_target - y);
     //NOTATION: ~J is the transpose of J
     
     //sets joint angles AND computes all frames AND updates display
-    K.setJointState(q);
-
-    //optional: pause and watch OpenGL
-    K.watch(true);
+    S.setJointAngles(q);
   }
+  S.watch();
 }
 
 
@@ -92,6 +92,8 @@ int main(int argc,char **argv){
   case 0:  simpleArrayOperations();  break;
   case 1:  openingSimulator();  break;
   case 2:  reach();  break;
+//  case 3:  circle();  break;
+//  case 4:  multiTask();  break;
   }
 
   return 0;
