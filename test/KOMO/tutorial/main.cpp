@@ -80,14 +80,19 @@ void tutorialBasics_short(){
   komo.setModel(G, false);
   komo.setPathOpt(2., 20);
 
-  komo.setTask(1., -1., new TaskMap_Default(posDiffTMT,  komo.world, "baxterR", NoVector, "target", NoVector));
-  komo.setTask(1., -1., new TaskMap_Default(quatDiffTMT, komo.world, "baxterR", NoVector, "target", NoVector));
-  komo.setTask(1., -1., new TaskMap_Default(vecDiffTMT,  komo.world, "baxterL", -Vector_z, NULL, Vector_x));
+  arr target_lin, target_rot;
+  target_lin = {.5, .5, 0};
+  target_rot = {.1, .1, .1};
+
+  komo.setTask(1., -1., new TaskMap_Default(posTMT,  komo.world, "baxterR", NoVector, "target", target_lin));
+  komo.setTask(1., -1., new TaskMap_Default(posTMT,  komo.world, "baxterL", NoVector, "target", target_lin));
+  komo.setTask(1.5, -1., new TaskMap_Default(vecTMT,  komo.world, "baxterR", NoVector, "target", target_rot));
+  //komo.setTask(1., -1., new TaskMap_Default(vecTMT,  komo.world, "baxterL", NoVector, "target", target_rot));
 
   komo.reset();
   komo.run();
-  komo.getReport(true); //true -> plot the cost curves
-  for(uint i=0;i<2;i++) komo.displayTrajectory(.1, true); //play the trajectory
+  //komo.getReport(true); //true -> plot the cost curves
+  komo.displayTrajectory(.1, true); //play the trajectory
 }
 
 //===========================================================================
@@ -130,7 +135,7 @@ int main(int argc,char** argv){
 
   tutorialBasics_short();
 
-  tutorialInverseKinematics();
+//  tutorialInverseKinematics();
 
   return 0;
 }
