@@ -25,15 +25,22 @@ int main(int argc,char **argv){
   //iterate taking samplings and updating a GP
   uint T=20;
   arr data_X, data_y;
+  arr gp_sigma;
+
   for(uint t=0;t<T;t++){
     //a random decision
-    arr x = -2. + 4.*rand(1);
-
-    /* Tip to implement a better strategy:
-     * -- generate a grid X (maybe use the one we already have)
-     * -- compute some acquisition function alpha(i) over the grid
-     * -- pick x = X[argmax(alpha)]  (the column in X with index argmax_i \alpha(x_i) )
-     */
+    uint N = 20;
+    uint maxi;
+    arr maxx = grid(1, 0, 0, 100);
+    arr xs [N];
+    for(uint i=0;i<N;i++){
+      xs[i] = -2. + 4.*rand(1);
+      if(gp_sigma(xs[i]) > gp_sigma(maxx)){
+	maxx = xs[i];
+ 	maxi = i;
+      }
+    }
+    arr x = xs[maxi]; 
 
     //query the function
     double y = f(x);
@@ -47,7 +54,6 @@ int main(int argc,char **argv){
     KernelRidgeRegression GP(data_X, data_y, defaultKernelFunction, -1., fmean);
 
     //Plotting: evaluate the GP over the grid X:
-    arr gp_sigma;
     arr gp_y = GP.evaluate(X, gp_sigma);
 
     plotClear();

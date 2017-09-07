@@ -13,8 +13,8 @@ int main(int argc,char **argv){
 
   rnd.clockSeed(); //random seed rng
 
-  uint K=1000; //trials
-  uint T=1000;  //episode lengths
+  uint K=200; //trials
+  uint T=200;  //episode lengths
   uint B=Bandits.N;
   arr avg_regret = zeros(T); //regret as a function of time
 
@@ -22,12 +22,12 @@ int main(int argc,char **argv){
     arr y = zeros(B);  //store the total return from each bandid
     arr ni = zeros(B); //store the # each has been chosen
     for(uint t=0;t<T;t++){ //time
-      uint decision = rnd(B);
+      uint decision;
       if(t<B) decision = t; //first: play each bandit at least once
       if(t>=B){ //do something cleverer
-//        arr Q = zeros(B);
-//        for(uint b=0;b<B;b++) Q(b) = ???
-//        decision = argmax(Q);
+        arr Q = zeros(B);
+        for(uint b=0;b<B;b++) Q(b) = y(b) / ni(b);
+        decision = argmax(Q);
       }
       double r = getReturn(decision);
       y(decision) += r;
