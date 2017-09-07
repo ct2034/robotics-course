@@ -2,7 +2,7 @@
 
 void holdSteady(){
   mlr::KinematicWorld K("pegArm.ors");
-  double noise = 1.;
+  double noise = 0;
   bool gravity = true;
   uint n=K.getJointStateDimension();
 
@@ -11,6 +11,8 @@ void holdSteady(){
   
   arr q,qdot;
   arr M,F,u(n);
+  double Kp = 200;
+  double Kd = .5*sqrt(4.*Kp);
   
   K.getJointState(q, qdot);
   cout <<"initial posture (hit ENTER in the OpenGL window to continue!!)" <<endl;
@@ -22,16 +24,21 @@ void holdSteady(){
     K.equationOfMotion(M,F);
 
     //no controller torques
-    u = 0.; //use M, F, and some desired qddot to compute u
+    arr qddot = -Kp*q - Kd*qdot;
+    u = M*qddot+F; //use M, F, and some desired qddot to compute u
 
     //dynamic simulation (simple Euler integration of the system dynamics, look into the code)
     K.stepDynamics(u, tau, noise, gravity);
     K.watch(false);
     K.getJointState(q, qdot);
 
+    //qset = 1/Kp * (qref-q);
+    //qdotset = 1/Kd * (qdotref-qdot);
+    //K.setJointState(qset, qdotset);
+
     //some impuls
     if(t==100){
-      qdot+=1.;
+      qdot+=10.;
       K.setJointState(q, qdot);
     }
 
